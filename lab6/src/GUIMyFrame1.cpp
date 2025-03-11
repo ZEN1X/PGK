@@ -26,7 +26,32 @@ void GUIMyFrame1::m_scrolledWindow_update(wxUpdateUIEvent& event) {
 }
 
 void GUIMyFrame1::m_b_grayscale_click(wxCommandEvent& event) {
-  Img_Cpy = Img_Org.ConvertToGreyscale().Copy();
+  // Img_Cpy = Img_Org.ConvertToGreyscale().Copy();
+
+  // make a copy of the original first, since Img_Cpy might've been modified already
+  Img_Cpy = Img_Org.Copy();
+
+  size_t width = Img_Cpy.GetWidth();
+  size_t height = Img_Cpy.GetHeight();
+
+  unsigned char* img_raw = Img_Cpy.GetData();
+
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
+      size_t pos = (y * width + x) * 3;
+      double r = img_raw[pos] / 255.0;
+      double g = img_raw[pos+1] / 255.0;
+      double b = img_raw[pos+2] / 255.0;
+
+      unsigned char new_r = (0.5 * std::sin(2 * M_PI * r) + 0.5) * 255;
+      unsigned char new_g = (0.25 * (std::sin(2 * M_PI * g) + std::cos(2 * M_PI * r) + 2)) * 255;
+      unsigned char new_b = (0.5 * std::cos(2 * M_PI * b) + 0.5) * 255;
+
+      img_raw[pos] = new_r;
+      img_raw[pos+1] = new_g;
+      img_raw[pos+2] = new_b;
+    }
+  }
 }
 
 void GUIMyFrame1::m_b_blur_click(wxCommandEvent& event) {
